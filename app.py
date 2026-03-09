@@ -5,7 +5,7 @@ import pandas as pd
 app = Flask(__name__, template_folder=r"D:\Projects\KLM\CSE\Career_Prediction\templates")
 
 # Load the trained model
-model = pickle.load(open(r'D:\Projects\KLM\CSE\Career_Prediction\Model\model.pkl', 'rb'))
+model = pickle.load(open('model.pkl','rb'))
 label_encoders = pickle.load(open(r'D:\Projects\KLM\CSE\Career_Prediction\Model\label_encoders.pkl', 'rb'))
 
 le = label_encoders["Career"]
@@ -53,3 +53,4 @@ def predict():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
