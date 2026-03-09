@@ -1,26 +1,37 @@
 from flask import Flask, request, render_template, jsonify
 import pickle
 import pandas as pd
+import os
 
+# Initialize Flask app
 app = Flask(__name__)
 
-# Load the trained model
-model = pickle.load(open('model.pkl','rb'))
-label_encoders = pickle.load(open('label_encoders.pkl','rb'))
+# Get current directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load model
+model_path = os.path.join(BASE_DIR, "model.pkl")
+with open(model_path, "rb") as f:
+    model = pickle.load(f)
+
+# Load label encoders
+encoder_path = os.path.join(BASE_DIR, "label_encoders.pkl")
+with open(encoder_path, "rb") as f:
+    label_encoders = pickle.load(f)
 
 le = label_encoders["Career"]
 career_classes = dict(zip(le.transform(le.classes_), le.classes_))
 
-@app.route('/')
+
+@app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route('/predict', methods=['POST'])
+
+@app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Get form data directly as integers/floats
         data = request.form
-        print("📥 Received Input Data:", data)  # Debugging
 
         encoded_data = {
             "GPA": float(data["GPA"]),
@@ -33,25 +44,19 @@ def predict():
             "Preferred_Work_Environment": int(data["Preferred_Work_Environment"])
         }
 
-        print("🛠️ Encoded Data for Model:", encoded_data)  # Debugging
-
-        # Convert into DataFrame for model prediction
         df = pd.DataFrame([encoded_data])
 
-        # Make prediction
         prediction = model.predict(df)[0]
 
         career = ""
         if prediction in career_classes:
             career = career_classes[prediction]
 
-        # Render prediction result page
         return render_template("predict.html", career=career)
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
-
-
